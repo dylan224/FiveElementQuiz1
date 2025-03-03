@@ -201,7 +201,18 @@ const questions = [
     ]
   }
 ];
-// 打乱问题顺序的函数
+
+
+// 用于打乱数组顺序的函数
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// 用于打乱数组顺序的函数
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -221,8 +232,8 @@ function renderQuestion(index) {
   const questionsContainer = document.getElementById("questions-container");
   questionsContainer.innerHTML = ''; // 清空容器
 
-  if (index < questions.length) {
-    const q = questions[index];
+  if (index < shuffledQuestions.length) {
+    const q = shuffledQuestions[index];
     const questionDiv = document.createElement("div");
     questionDiv.classList.add("question");
 
@@ -231,17 +242,20 @@ function renderQuestion(index) {
     questionTitle.textContent = `问题 ${index + 1}: ${q.question}`;
     questionDiv.appendChild(questionTitle);
 
+    // 打乱选项顺序
+    const shuffledOptions = shuffleArray([...q.options]);
+
     // 问题选项
     const optionsDiv = document.createElement("div");
     optionsDiv.classList.add("options");
-    q.options.forEach(option => {
+    shuffledOptions.forEach(option => {
       const optionLabel = document.createElement("label");
       const optionInput = document.createElement("input");
       optionInput.type = "radio";
       optionInput.name = `question-${index + 1}`;
       optionInput.value = option[0]; // 选项的字母A/B/C/D/E
       optionLabel.appendChild(optionInput);
-      optionLabel.appendChild(document.createTextNode(option));
+      optionLabel.appendChild(document.createTextNode(option.slice(2))); // 去掉标号
       optionsDiv.appendChild(optionLabel);
     });
 
@@ -250,7 +264,7 @@ function renderQuestion(index) {
 
     // 显示"下一题"按钮
     const nextButton = document.createElement("button");
-    nextButton.textContent = index < questions.length - 1 ? "下一题" : "提交问卷";
+    nextButton.textContent = index < shuffledQuestions.length - 1 ? "下一题" : "提交问卷";
     nextButton.classList.add("submit-btn");
     nextButton.onclick = () => nextQuestion();
     questionsContainer.appendChild(nextButton);
@@ -263,7 +277,7 @@ function nextQuestion() {
   if (selectedOption) {
     userAnswers.push(selectedOption.value); // 保存选择
     currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
+    if (currentQuestionIndex < shuffledQuestions.length) {
       renderQuestion(currentQuestionIndex);
     } else {
       showResults();
@@ -301,6 +315,10 @@ function showResults() {
       <li>土（E）: ${totalScores['E']} 分</li>
     </ul>
   `;
+
+  // 隐藏问题容器
+  const questionsContainer = document.getElementById("questions-container");
+  questionsContainer.style.display = "none";
 }
 
 // 在初始化时打乱问题顺序并显示第一个问题
